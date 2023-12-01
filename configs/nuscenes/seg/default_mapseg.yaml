@@ -1,0 +1,14 @@
+model:
+  type: BEVFusionLaneDistill
+
+  heads:
+    object: null
+    map:
+      type: BEVLaneSegmentationHead
+      in_channels: 256
+      grid_transform:
+        input_scope: [[-51.2, 51.2, 0.8], [-51.2, 51.2, 0.8]]
+        output_scope: [[-30.0, 30.0, 0.15], [-30.0, 30.0, 0.15]]
+#        output_scope: [[-15.0, 15.0, 0.15], [-30.0, 30.0, 0.15]]
+      classes: ${map_classes_refine}
+      loss: xent
