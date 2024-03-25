@@ -142,11 +142,11 @@ class GlobalRotScaleTrans:
                 data["points"].translate(translation)
                 data["points"].scale(scale)
 
-#            gt_boxes = data["gt_bboxes_3d"]
-#            rotation = rotation @ gt_boxes.rotate(theta).numpy()
-#            gt_boxes.translate(translation)
-#            gt_boxes.scale(scale)
-#            data["gt_bboxes_3d"] = gt_boxes
+            gt_boxes = data["gt_bboxes_3d"]
+            rotation = rotation @ gt_boxes.rotate(theta).numpy()
+            gt_boxes.translate(translation)
+            gt_boxes.scale(scale)
+            data["gt_bboxes_3d"] = gt_boxes
 
             transform[:3, :3] = rotation.T * scale
             transform[:3, 3] = translation * scale
