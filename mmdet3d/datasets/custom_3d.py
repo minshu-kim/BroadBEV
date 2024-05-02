@@ -240,10 +240,10 @@ class Custom3DDataset(Dataset):
             return None
         self.pre_pipeline(input_dict)
         example = self.pipeline(input_dict)
-#        if self.filter_empty_gt and (
-#            example is None or ~(example["gt_labels_3d"]._data != -1).any()
-#        ):
-#            return None
+       if self.filter_empty_gt and (
+           example is None or ~(example["gt_labels_3d"]._data != -1).any()
+       ):
+           return None
         return example
 
     def prepare_test_data(self, index):

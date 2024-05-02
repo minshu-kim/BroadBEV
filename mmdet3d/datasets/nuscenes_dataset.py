@@ -546,29 +546,6 @@ class NuScenesDataset(Custom3DDataset):
         metrics["map/mean/iou@max"] = ious.max(dim=1).values.mean().item()
         return metrics
 
-    def evaluate_hdmap(self, results):
-        total_union = 0
-        total_intersects = 0
-
-        for result in results:
-            semantic = result["masks_bev"]
-            semantic_gt = result["gt_masks_bev"]
-
-            intersects, union = self.get_batch_iou(self.onehot_encoding(semantic.unsqueeze(0)), semantic_gt.unsqueeze(0))
-            total_intersects += intersects
-            total_union += union
-
-        ious = total_intersects / (total_union + 1e-7)
-
-        metrics = {}
-        for index, name in enumerate(self.map_classes):
-            metrics[f"map/{name}/iou@max"] = ious[index].max().item()
-            # for threshold, iou in zip(thresholds, ious[index]):
-            #     metrics[f"map/{name}/iou@{threshold.item():.2f}"] = iou.item()
-        # metrics["map/mean/iou@max"] = ious.max(dim=1).values.mean().item()
-        metrics["map/mean/iou@max"] = ious[1:].mean().item()
-        return metrics
-
     def evaluate(
         self,
         results,

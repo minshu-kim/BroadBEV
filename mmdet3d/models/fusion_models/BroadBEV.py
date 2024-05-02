@@ -81,8 +81,6 @@ class BroadBEV(Base3DFusionModel):
                     self.loss_scale[name] = 1.0
 
         self.init_weights()
-        self.stack = 0
-        self.i = 0
 
     def init_weights(self) -> None:
         if "camera" in self.encoders:

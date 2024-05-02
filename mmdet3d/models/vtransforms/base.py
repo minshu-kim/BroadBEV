@@ -4,6 +4,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from mmdet3d.ops import bev_pool
+from mmdet3d.ops.bev_pool_v2.bev_pool import bev_pool_v2
+
 from mmcv.runner import force_fp32
 
 __all__ = ["BaseTransform", "BaseDepthTransform", "BaseTransformPointScattering"]
@@ -38,6 +40,9 @@ class BaseTransform(nn.Module):
         self.ybound = ybound
         self.zbound = zbound
         self.dbound = dbound
+        self.grid_lower_bound = torch.Tensor([cfg[0] for cfg in [xbound, ybound, zbound]])
+        self.grid_interval = torch.Tensor([cfg[2] for cfg in [xbound, ybound, zbound]])
+        self.grid_size = torch.Tensor([(cfg[1] - cfg[0]) / cfg[2] for cfg in [xbound, ybound, zbound]])
 
         dx, bx, nx = gen_dx_bx(self.xbound, self.ybound, self.zbound)
         self.dx = nn.Parameter(dx, requires_grad=False)
@@ -123,6 +128,67 @@ class BaseTransform(nn.Module):
 
     def get_cam_feats(self, x):
         raise NotImplementedError
+
+    @force_fp32()
+    def voxel_pooling_prepare_v2(self, coor):
+        """Data preparation for voxel pooling.
+
+        Args:
+            coor (torch.tensor): Coordinate of points in the lidar space in
+                shape (B, N, D, H, W, 3).
+
+        Returns:
+            tuple[torch.tensor]: Rank of the voxel that a point is belong to
+                in shape (N_Points); Reserved index of points in the depth
+                space in shape (N_Points). Reserved index of points in the
+                feature space in shape (N_Points).
+        """
+        B, N, D, H, W, _ = coor.shape
+        num_points = B * N * D * H * W
+        # record the index of selected points for acceleration purpose
+        ranks_depth = torch.range(
+            0, num_points - 1, dtype=torch.int, device=coor.device)
+        ranks_feat = torch.range(
+            0, num_points // D - 1, dtype=torch.int, device=coor.device)
+        ranks_feat = ranks_feat.reshape(B, N, 1, H, W)
+        ranks_feat = ranks_feat.expand(B, N, D, H, W).flatten()
+        # convert coordinate into the voxel space
+        coor = ((coor - self.grid_lower_bound.to(coor)) /
+                self.grid_interval.to(coor))
+        coor = coor.long().view(num_points, 3)
+        batch_idx = torch.range(0, B - 1).reshape(B, 1). \
+            expand(B, num_points // B).reshape(num_points, 1).to(coor)
+        coor = torch.cat((coor, batch_idx), 1)
+
+        # filter out points that are outside box
+        kept = (coor[:, 0] >= 0) & (coor[:, 0] < self.grid_size[0]) & \
+               (coor[:, 1] >= 0) & (coor[:, 1] < self.grid_size[1]) & \
+               (coor[:, 2] >= 0) & (coor[:, 2] < self.grid_size[2])
+        if len(kept) == 0:
+            return None, None, None, None, None
+        coor, ranks_depth, ranks_feat = \
+            coor[kept], ranks_depth[kept], ranks_feat[kept]
+        # get tensors from the same voxel next to each other
+        ranks_bev = coor[:, 3] * (
+            self.grid_size[2] * self.grid_size[1] * self.grid_size[0])
+        ranks_bev += coor[:, 2] * (self.grid_size[1] * self.grid_size[0])
+        ranks_bev += coor[:, 1] * self.grid_size[0] + coor[:, 0]
+        order = ranks_bev.argsort()
+        ranks_bev, ranks_depth, ranks_feat = \
+            ranks_bev[order], ranks_depth[order], ranks_feat[order]
+
+        kept = torch.ones(
+            ranks_bev.shape[0], device=ranks_bev.device, dtype=torch.bool)
+        kept[1:] = ranks_bev[1:] != ranks_bev[:-1]
+        interval_starts = torch.where(kept)[0].int()
+        if len(interval_starts) == 0:
+            return None, None, None, None, None
+        interval_lengths = torch.zeros_like(interval_starts)
+        interval_lengths[:-1] = interval_starts[1:] - interval_starts[:-1]
+        interval_lengths[-1] = ranks_bev.shape[0] - interval_starts[-1]
+        return ranks_bev.int().contiguous(), ranks_depth.int().contiguous(
+        ), ranks_feat.int().contiguous(), interval_starts.int().contiguous(
+        ), interval_lengths.int().contiguous()
 
     @force_fp32()
     def bev_pool(self, geom_feats, x):
@@ -363,8 +429,15 @@ class BaseTransformPointScattering(BaseTransform):
 
         x, depth = self.get_cam_feats(img)
         x = self.bev_pool(geom, x)
+        # x = self.voxel_pooling_v2(
+        #     geom, torch.ones_like(depth).cuda(),
+        #     x)
 
         camera_bev = self.bev_pool(geom, depth)
+#        camera_bev = self.voxel_pooling_v2(
+#            geom, depth,
+#            torch.ones_like(x[..., 0].unsqueeze(-1)).cuda())
+
         camera_bev = torch.sigmoid(self.fuser(torch.cat([camera_bev, lidar_bev], dim=1)))       
         x = x * camera_bev
 
