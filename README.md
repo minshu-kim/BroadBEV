@@ -25,8 +25,9 @@ BroadBEV project folder should contains the following files.
 ``` bash
 BroadBEV
 ├── mmdet3d
-├── tools
+├── pretrained
 ├── configs
+├── tools
 ├── data
 │   ├── nuscenes
 │   │   ├── maps
@@ -42,7 +43,7 @@ BroadBEV
 ```
 
 ## Pretrained Models
-You can download below models on this [link]().
+You can download below models on this [link](https://drive.google.com/file/d/1PdQHMZWLFiiZC4cO11nCFb5JKIdLckjI/view?usp=share_link).
 
 ## Train & Evaluation
 Note that we use 4 NVIDIA A100 80GB in our experiments. <br/>
