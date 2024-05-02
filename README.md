@@ -53,4 +53,4 @@ bash scripts/eval.sh
 ```
 
 ## Acknowlegment
-This work is mainly based on [LTEW](https://github.com/jaewon-lee-b/ltew) and [IHN](https://github.com/imdumpl78/IHN), we thank the authors for the contribution.
+This work is mainly based on [MIT BEVFusion](https://github.com/mit-han-lab/bevfusion), we thank the authors for the contribution.
