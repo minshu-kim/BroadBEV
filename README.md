@@ -20,7 +20,7 @@ python setup.py develop
 
 ## Data Preparation
 For Setup details, follow the guidelines of [here](https://github.com/mit-han-lab/bevfusion). <br/>
-BroadBEV project folder should contains the following files.
+BroadBEV project folder should contain the below files.
 
 ``` bash
 BroadBEV
