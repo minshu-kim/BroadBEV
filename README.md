@@ -13,20 +13,21 @@ This repository contains the official implementation of BroadBEV, 24' ICRA: [htt
 - mmdetection = 2.20.0
 - nuscenes-dev-kit
 
-2. Run the below command after intalling the python packages.
+2. Run the below command after installing the python packages.
 ```
 python setup.py develop
 ```
 
 ## Data Preparation
 For Setup details, follow the guidelines of [here](https://github.com/mit-han-lab/bevfusion). <br/>
-BroadBEV project folder should contains the following files.
+BroadBEV project folder should contain the below files.
 
 ``` bash
 BroadBEV
 ├── mmdet3d
-├── tools
+├── pretrained
 ├── configs
+├── tools
 ├── data
 │   ├── nuscenes
 │   │   ├── maps
@@ -42,7 +43,7 @@ BroadBEV
 ```
 
 ## Pretrained Models
-You can download below models on this [link]().
+You can download below models on this [link](https://drive.google.com/file/d/1PdQHMZWLFiiZC4cO11nCFb5JKIdLckjI/view?usp=share_link).
 
 ## Train & Evaluation
 Note that we use 4 NVIDIA A100 80GB in our experiments. <br/>
@@ -53,4 +54,4 @@ bash scripts/eval.sh
 ```
 
 ## Acknowlegment
-This work is mainly based on [LTEW](https://github.com/jaewon-lee-b/ltew) and [IHN](https://github.com/imdumpl78/IHN), we thank the authors for the contribution.
+This work is mainly based on [MIT BEVFusion](https://github.com/mit-han-lab/bevfusion), we thank the authors for their contribution.
