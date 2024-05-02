@@ -13,7 +13,7 @@ This repository contains the official implementation of BroadBEV, 24' ICRA: [htt
 - mmdetection = 2.20.0
 - nuscenes-dev-kit
 
-2. Run the below command after intalling the python packages.
+2. Run the below command after installing the python packages.
 ```
 python setup.py develop
 ```
@@ -54,4 +54,4 @@ bash scripts/eval.sh
 ```
 
 ## Acknowlegment
-This work is mainly based on [MIT BEVFusion](https://github.com/mit-han-lab/bevfusion), we thank the authors for the contribution.
+This work is mainly based on [MIT BEVFusion](https://github.com/mit-han-lab/bevfusion), we thank the authors for their contribution.
