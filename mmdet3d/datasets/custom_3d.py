@@ -70,7 +70,7 @@ class Custom3DDataset(Dataset):
             self.data_infos = self.load_annotations(self.ann_file)
 
         else:
-            self.data_infos = self.load_annotations(self.ann_file)[:1000]
+            self.data_infos = self.load_annotations(self.ann_file) #[:1000]
 
         if test_night and test_rainy:
             rain_tokens = []
